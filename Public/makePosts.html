@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+   
+    <link rel="stylesheet" type="text/css" href="makePosts.css">
+<title>Make Post</title>
+  </head>
+  <body>
+    <input id = "username" type = "text" placeholder = "username" >
+    <input id = "pass" type = "text" placeholder = "password" >
+    <button id = "login">log in</button>
+    
+
+    <div id = "afterLogin">
+
+
+    
+    <h1>Make A Post!</h1>
+    <h3>Exercise Post</h3>
+    <input type = "text" placeholder="type of exercise" id = "exercise">
+    <input type = "text" placeholder="duration (mins)" id = "duration">
+    <input type = "text" placeholder="time (hr)" id = "time">
+    <select id = "ampm">
+        <option value = "am">am</option>
+        <option value = "pm">pm</option>
+    </select>
+    <input type = "text" placeholder="month/day/year" id = "date">
+    <button id = "submitExercise">Submit</button>
+    <div id = "insertResult1"></div>
+    <br>
+    <br>
+    <h3>Food Post</h3>
+    <input type = "text" placeholder="food type" id = "food">
+    <input type = "text" placeholder="amount" id = "amount">
+    <select id = "units">
+        <option value = "oz">oz</option>
+        <option value = "lb">lb</option>
+        <option value = "cup">cup</option>
+        <option value = "g">g</option>
+    </select>
+    <input type = "text" placeholder="time (hr)" id = "time2">
+    <select id = "ampm2">
+        <option value = "am">am</option>
+        <option value = "pm">pm</option>
+    </select>
+    <input type = "text" placeholder="month/day/year" id = "date2">
+    <button id = "submitFood">Submit</button>
+    <div id = "insertResult"></div>
+    <br>
+    <br>
+    <button id = "logout">Logout</button>
+  </div>
+  
+  <script>
+    document.getElementById("login").addEventListener("click", login);
+let userId = -1;
+
+//function to ensure user inputs username and password before they can create and edit/delete posts 
+async function login(event){
+  console.log("in login");
+  let thisUsername = String(document.getElementById("username").value);
+  let thisPass = String(document.getElementById("pass").value);
+
+  let data = {"username" : thisUsername, "pass" : thisPass};
+
+  fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/login.php", {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {'Access-Control-Request-Headers':"*"}
+  })
+      .then(response => response.json())
+   
+      .then(data => {if(data.success){
+        userId = data["userId"];
+        console.log(userId);
+        document.getElementById("afterLogin").style.display = "block";
+
+      }})
+  }
+   
+//redirects user to main page upon logout
+  function logout(){
+    console.log("inlogout");
+    //main page
+   window.location.href='http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com:3000/index.html';
+ }
+
+//defines user inputs that user has to give to make an exercise post
+function submitExercise(event){
+    type = String(document.getElementById("exercise").value);
+    console.log(type);
+    duration = Number(document.getElementById("duration").value);
+    console.log(duration);
+    time = Number(document.getElementById("time").value);
+    console.log(time);
+    ampm =  String(document.getElementById("ampm").value);
+   console.log(ampm);
+   date = String(document.getElementById("date").value);
+    
+    let data = {"type" : type, "duration" : duration, "time": time, "ampm": ampm, "date": date, "userId" :userId}
+
+
+      fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/makeExercisePost.php", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+      .then(response => response.json())
+      .then(data => document.getElementById("insertResult1").innerHTML = (data.success ? "Uploaded" : `failed ${data.message}`))
+      .catch(err => console.error(err));
+}
+
+//defines user inputs that user has to give to make a food post
+function submitFood(event){
+    food = String(document.getElementById("food").value);
+    console.log(food);
+    amount = Number(document.getElementById("amount").value);
+    console.log(amount);
+    unit = String(document.getElementById("units").value);
+    console.log(unit);
+    time = Number(document.getElementById("time2").value);
+    console.log(time);
+    ampm2 =  String(document.getElementById("ampm2").value);
+   console.log(ampm2);
+   date2 = String(document.getElementById("date2").value);
+    
+    
+    let data = {"food" : food, "amount" : amount, "units" : unit, "time": time, "ampm": ampm2, "date": date2, "userId":userId}
+
+
+      fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/makeFoodPost.php", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+      .then(response => response.json())
+      .then(data => document.getElementById("insertResult").innerHTML = (data.success ? "Uploaded" : `failed ${data.message}`))
+      .catch(err => console.error(err));
+}
+
+
+ document.getElementById("logout").addEventListener("click", logout);
+ document.getElementById("submitExercise").addEventListener("click", submitExercise);
+ document.getElementById("submitFood").addEventListener("click", submitFood);
+  
+  </script>
+</body>
+</html>

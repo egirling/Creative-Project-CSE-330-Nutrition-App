@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" type="text/css" href="makePosts.css">
+    <title>Nutrition App</title>
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+   
+   
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+
+        <p>my stats page</p>
+        <input id = "username" type = "text" placeholder = "username" >
+        <input id = "pass" type = "text" placeholder = "password" >
+        <button id = "login">log in</button>
+        <div id = "afterLogin">
+        <h1>Add or View Stats</h1>
+        <input type = "text" id = height placeholder="height (inches)">
+        <input type = "text" id = weight placeholder="weight (pounds)">
+        <select name = "gender" id = "gender">
+          <option value = "female">female</option>
+          <option value = "male">male</option>
+          <option value = "non-binary">non-binary</option>
+          <option value = "other">other</option>
+        </select>
+        <input type = "text" id = age placeholder="age (years)">
+        <input type = "text" id = ethnicity placeholder="ethnicity">
+        <button id = "submitStats">Submit</button>
+    </div>
+    <div id = "insertResult"></div>
+    
+    <div id = "myProfile">
+      <h3>My Profile</h3>
+      <br>
+
+
+    </div>
+    <button id = "logout">Logout</button>
+  </div>
+    
+
+   <script>
+     let userId = -1;
+     document.getElementById("login").addEventListener("click", login);
+     let weight;
+     let height;
+     let gender;
+     let age;
+     let ethnicity;
+     function logout(){
+       console.log("inlogout");
+       fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/logout.php", {
+          method: 'POST',
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+      .then(response => response.json())
+      .then(data => document.getElementById("insertResult").innerHTML = (data.success ? "Logged Out" : `failed ${data.message}`))
+      .catch(err => console.error(err));
+      window.location.href='http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com:3000/index.html';
+    }
+ function submitStats(){
+    console.log("values before sending");
+    weight = Number(document.getElementById("weight").value);
+    console.log(weight);
+    height = Number(document.getElementById("height").value);
+    console.log(height);
+    gender = String(document.getElementById("gender").value);
+    console.log(gender);
+    age =  Number(document.getElementById("age").value);
+    ethnicity =  String(document.getElementById("ethnicity").value);
+    console.log("userId before sending: " + userId);
+    let data = {"weight" : weight, "height" : height, "gender": gender, "age": age, "ethnicity": ethnicity, "userId": userId}
+
+
+      fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/updateStats.php", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+      .then(response => response.json())
+      .then(data => document.getElementById("insertResult").innerHTML = (data.success ? "Uploaded" : `failed ${data.message}`))
+      .then(displayStats())
+      .catch(err => console.error(err));
+    }
+    
+    function displayStats(event){
+      console.log("user id in displayStats: " + userId);
+      if(userId != -1){
+      
+      console.log("in if")
+      let parent = document.getElementById("myProfile");
+      while (parent.firstChild) {
+                  parent.removeChild(parent.firstChild);
+            }
+      let thisWeight = document.createTextNode("weight: "+weight + "lbs ");
+     let thisHeight = document.createTextNode("height: " +height);
+     let thisGender = document.createTextNode("gender: " +gender);
+     let thisAge = document.createTextNode("age: " + age);
+     let thisEthnicity = document.createTextNode("ethnicity: " +ethnicity );
+
+     parent.appendChild(thisWeight);
+     parent.appendChild(document.createElement("br"));
+     parent.appendChild(thisHeight);
+     parent.appendChild(document.createElement("br"));
+     parent.appendChild(thisGender);
+     parent.appendChild(document.createElement("br"));
+     parent.appendChild(thisAge);
+     parent.appendChild(document.createElement("br"));
+     parent.appendChild(thisEthnicity);
+
+          }
+    }
+    async function getStats(event){
+      console.log("user id in getStats: " + userId);
+      let data = {"userId": userId}
+      let response = await fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getStats.php", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+      if(response.ok){
+      info = await response.json();
+        weight = info.weight;
+        console.log("weight2: " + weight);
+        height = info.height;
+        gender = info.gender;
+        age = info.age;
+        ethnicity = info.ethnicity;
+      }
+    
+      displayStats(event)
+    }
+    
+    async function login(event){
+      console.log("in login");
+      let thisUsername = String(document.getElementById("username").value);
+      let thisPass = String(document.getElementById("pass").value);
+
+      let data = {"username" : thisUsername, "pass" : thisPass};
+
+      fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/login.php", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {'Access-Control-Request-Headers':"*"}
+      })
+          .then(response => response.json())
+     
+          .then(data => {if(data.success){
+            userId = data["userId"];
+            console.log(userId);
+            document.getElementById("afterLogin").style.display = "block";
+            getStats(event);
+            displayStats(event);
+
+          }})
+  }
+
+    
+
+    document.getElementById("logout").addEventListener("click", logout);
+    document.getElementById("submitStats").addEventListener("click", submitStats);
+    //document.addEventListener("DOMContentLoaded", getStats(event));
+
+   </script>
+  </body>
+</html>

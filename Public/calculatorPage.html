@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <title>Nutrition App</title>
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+   
+    
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+
+        <p>Calculator Page</p>
+       
+    </div>
+    <div id = "exersize">
+      <h2>Calories Burned Calculator</h2>
+      <input id = "exercise" type = "text" placeholder="exercise (ex skiing)">
+     
+      <button id = "getCals">Calculate</button>
+      <ul id = "results1">
+
+      </ul>
+<br>
+<br>
+      <h2>Food Calorie Calculator</h2>
+      <input id = "food" type = "text" placeholder="food ex. pizza">
+      <input id = "amount" type = "text" placeholder="amount ex. 1 slice">
+      
+      <button id = "getFoodCals">Calculate</button>
+
+    </div>
+    <div>
+      <ul id = "results">
+
+      </ul>
+
+    </div>
+    
+    
+    <br>
+    <br>
+    <h3>Need food inspiration? Enter a username and see a recommendation!</h3>
+    <input id = "username" type = "text" placeholder="username">
+    <button id = "submit">Submit</button>
+    <div id = "insertResult"></div>
+    <br>
+    <br>
+    <h2>Need exersize inspiration? Enter a muscle group you want to workout and see a recommendation!</h2>
+      <input id = "muscle" type = "text" placeholder="muscle group ex. glutes">
+      <button id = "getWorkout">Calculate</button>
+    <div id = "workouts">
+
+    </div>
+    
+    
+    <button id = "logout">Logout</button>
+    <script>
+      
+      
+      let key = "mR/BiHSaPbOJQWAZVlXpvA==t1eitG2aJJOWuQeD";
+      
+      
+     document.getElementById("logout").addEventListener("click", logout);
+     document.getElementById("getCals").addEventListener("click", getActivity);
+     document.getElementById("getFoodCals").addEventListener("click", getFood);
+     document.getElementById("submit").addEventListener("click", getMeal);
+     document.getElementById("getWorkout").addEventListener("click", getWorkout);
+     
+     function logout(event){
+       console.log("inlogout");
+       window.location.href='http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com:3000/index.html';
+     }
+
+     async function getMeal(event){
+      
+        console.log("in get meal");
+        let user = String(document.getElementById("username").value);
+
+        let data = {"user":user}
+
+
+  
+          fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getMeal.php", {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Access-Control-Request-Headers':"*"}
+          })
+          .then(response => response.json())
+          .then(data => document.getElementById("insertResult").innerHTML = data.foodName + "<br>" + data.amount + " " + data.unit)
+          .catch(err => console.error(err));
+   
+        }
+
+
+    function getWorkout(){
+      var xhttp = new XMLHttpRequest();
+      let muscle = document.getElementById("muscle").value;
+     
+      xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            let info = JSON.parse(this.responseText);
+            console.log(info);
+            let parent = document.getElementById("workouts");
+              while (parent.firstChild) {
+                  parent.removeChild(parent.firstChild);
+              }
+            for(let i = 0; i<info.length; i++){
+   
+              let thisWorkout = document.createElement("li");
+             
+              thisWorkout.innerHTML = (info[i].name + "<br>" + " type of workout: " + info[i].type
+              + "<br>" + " equipment: " + info[i].equipment
+              + "<br>" + " difficulty: " + info[i].difficulty
+              + "<br>" + " instructions: " + info[i].instructions
+              );
+              document.getElementById("workouts").appendChild(thisWorkout);
+                
+             
+            }
+          }
+        };
+        let url = 'https://api.api-ninjas.com/v1/exercises?muscle='  + muscle;
+        xhttp.open("GET", url, true);
+        xhttp.setRequestHeader("x-api-key", key);
+      
+        xhttp.send();
+    }
+
+
+
+
+     function getActivity(){
+      var xhttp = new XMLHttpRequest();
+      let activity = document.getElementById("exercise").value;
+     
+      xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            let info = JSON.parse(this.responseText);
+            console.log(info);
+            let parent = document.getElementById("results");
+              while (parent.firstChild) {
+                  parent.removeChild(parent.firstChild);
+              }
+            for(let i = 0; i<info.length; i++){
+   
+              let thisActivity = document.createElement("li");
+             
+              thisActivity.innerHTML = (info[i].name + "<br>" + " calories burned per hour: " + info[i].calories_per_hour);
+              document.getElementById("results1").appendChild(thisActivity);
+                
+             
+            }
+          }
+        };
+        let url = 'https://api.api-ninjas.com/v1/caloriesburned?activity=' + activity;
+        xhttp.open("GET", url, true);
+        xhttp.setRequestHeader("x-api-key", key);
+      
+        xhttp.send();
+    }
+
+    function getFood(){
+      var xhttp = new XMLHttpRequest();
+      let food = document.getElementById("food").value;
+      let amount = document.getElementById("amount").value;
+      let input = food +" "+ amount;
+      console.log(input);
+     
+      xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            let info = JSON.parse(this.responseText);
+            console.log(info);
+            let parent = document.getElementById("results");
+              while (parent.firstChild) {
+                  parent.removeChild(parent.firstChild);
+              }
+            for(let i = 0; i<info.length; i++){
+              let thisActivity = document.createElement("li");
+              thisActivity.innerHTML = (
+                info[i].name + "<br>" + 
+              " calories: " + info[i].calories+"<br>" 
+              + " serving size: " + info[i].serving_size +"<br>"
+              + " total fat (g): " + info[i].fat_total_g +"<br>"
+              + " saturated fat (g): " + info[i].fat_saturated_g +"<br>"   );
+              document.getElementById("results").appendChild(thisActivity);
+                
+            }
+          }
+        };
+
+        let url = 'https://api.api-ninjas.com/v1/nutrition?query=' + input;
+        xhttp.open("GET", url, true);
+        xhttp.setRequestHeader("x-api-key", key);
+      
+        xhttp.send();
+    }
+    
+    </script>
+
+   
+  </body>
+</html>
