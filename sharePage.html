@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="sharePage.css">
+    <meta name="theme-color" content="#000000" />
+    <title>Nutrition App</title>
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+   
+   
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+
+        <H1>Explore Page</H1>
+       
+    </div>
+    <div id = "posts">
+    </div>
+    <button  id = "showExercise">Only Show Exersize Posts</button>
+   <button id = "showFood">Only Show Food Posts</button>
+   <button  id = "showAll">Show All Posts</button>
+    <button id = "logout">Logout</button>
+    
+    <script>
+      let posts = [];
+      let posts2 = [];
+      //redirection to main page when user logs out 
+      function logout(){
+        console.log("inlogout");
+       window.location.href='http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com:3000/index.html';
+     }
+     document.getElementById("logout").addEventListener("click", logout);
+    
+    //retrieves all of the posts to display for public
+    async function getPosts(event) {  
+            console.log("in getPosts");
+            let response = await fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getPublicPosts.php", {
+                method: 'POST',
+                headers: {'Access-Control-Request-Headers':"*"}
+            })
+            if (response.ok) {
+                posts = await response.json();
+                
+        }
+
+        let response2 = await fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getPublicPosts2.php", {
+                method: 'POST',
+                headers: {'Access-Control-Request-Headers':"*"}
+            })
+            if (response2.ok) {
+                posts2 = await response2.json();
+                showPosts();
+        }
+    }
+
+    //displays only public food posts 
+    async function getOnlyFood(event) {  
+            console.log("in getOnlyFood");
+            let response = await fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getPublicPosts.php", {
+                method: 'POST',
+                headers: {'Access-Control-Request-Headers':"*"}
+            })
+            if (response.ok) {
+                posts = await response.json();
+            }
+            posts2 = [];
+            showPosts();
+        }
+        
+        //displays only public exercise posts 
+        async function getOnlyExercise(event) {  
+            console.log("in getOnlyExercise");
+            let response = await fetch("http://ec2-54-153-91-49.us-west-1.compute.amazonaws.com/~egirling/nutritionapp/getPublicPosts2.php", {
+                method: 'POST',
+                headers: {'Access-Control-Request-Headers':"*"}
+            })
+            if (response.ok) {
+                posts2 = await response.json();
+            }
+            posts = [];
+            showPosts();
+        }
+
+    
+
+    //displays all public posts 
+    function showPosts(event){
+      console.log("in showPosts");
+      console.log(posts.length);
+      while(document.getElementById("posts").firstChild){
+        document.getElementById("posts").removeChild(document.getElementById("posts").firstChild);
+      }
+      for(let i = 0; i<posts.length; i++){
+      let aBreak = document.createElement("br");
+      let aBreak2 = document.createElement("br");
+      let aBreak3 = document.createElement("br");
+      let newPostBox = document.createElement("div");
+      newPostBox.setAttribute("id", "box");
+      let name = document.createTextNode(posts[i].username + '\n');
+      let food = document.createTextNode(posts[i].foodName + " ");
+      let unit = document.createTextNode(posts[i].unit+ '\n');
+      let time = document.createTextNode(posts[i].thisTime);
+      let ampm = document.createTextNode(posts[i].ampm + '\n');
+      let amount = document.createTextNode(posts[i].amount);
+      let date = document.createTextNode(posts[i].thisDate);
+
+      newPostBox.appendChild(name);
+      newPostBox.appendChild(aBreak2);
+      newPostBox.appendChild(time);
+      newPostBox.appendChild(ampm);
+      newPostBox.appendChild(aBreak);
+      newPostBox.appendChild(food);
+      newPostBox.appendChild(amount);
+      newPostBox.appendChild(unit);
+      newPostBox.appendChild(aBreak3);
+      newPostBox.appendChild(date);
+      document.getElementById("posts").appendChild(newPostBox);
+      }
+      
+      for(let i = 0; i<posts2.length; i++){
+      let eaBreak = document.createElement("br");
+      let eaBreak2 = document.createElement("br");
+      let eaBreak3 = document.createElement("br");
+      let enewPostBox = document.createElement("div");
+      enewPostBox.setAttribute("id", "box");
+      let username = document.createTextNode(posts2[i].username + '\n');
+      let activity = document.createTextNode(posts2[i].activity + " ");
+      let duration = document.createTextNode(posts2[i].duration+ '\n');
+      let etime = document.createTextNode(posts2[i].thisTime);
+      let eampm = document.createTextNode(posts2[i].ampm + '\n');
+      let date = document.createTextNode(posts2[i].thisDate);
+    
+
+      enewPostBox.appendChild(username);
+      enewPostBox.appendChild(eaBreak2);
+      enewPostBox.appendChild(etime);
+      enewPostBox.appendChild(eampm);
+      enewPostBox.appendChild(eaBreak);
+      enewPostBox.appendChild(activity);
+      enewPostBox.appendChild(eaBreak3);
+      enewPostBox.appendChild(date);
+      document.getElementById("posts").appendChild(enewPostBox);
+      }
+    }
+
+    console.log("right before getPosts");
+    document.addEventListener("DOMContentLoaded", getPosts(event));
+    
+    document.getElementById("showFood").addEventListener("click", getOnlyFood);
+    document.getElementById("showExercise").addEventListener("click", getOnlyExercise);
+    document.getElementById("showAll").addEventListener("click", getPosts);
+    console.log("right after getPosts");
+
+    </script>
+
+   
+  </body>
+</html>
